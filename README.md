@@ -4,9 +4,9 @@ See [documentation](TBD)
 
 ## Sample GraphQL Requests
 
-### Query
+### 1 - Queries
 
-#### read
+#### 1.1 read
 
 Query String:
 
@@ -25,7 +25,7 @@ Variables:
 { "channel": "channel-1", "name": "toto" }
 ```
 
-#### readHisto
+#### 1.2 readHisto
 
 Query String:
 
@@ -44,7 +44,7 @@ Variables:
 { "channel": "channel-1", "name": "toto", "start": 0, "end": 10 }
 ```
 
-#### checkPassword
+#### 1.3 checkPassword
 
 Query String:
 
@@ -60,9 +60,9 @@ Variables:
 { "password": "mysecret" }
 ```
 
-### Mutation
+### 2 Mutations
 
-#### write
+#### 2.1 write
 
 Query String:
 
@@ -94,7 +94,7 @@ Variables:
 }
 ```
 
-#### publish
+#### 2.2 publish
 
 Query String:
 
@@ -117,7 +117,7 @@ Variables:
 { "channel": "channel-1", "name": "toto", "value": "123" }
 ```
 
-#### publishWrite
+#### 2.3 publishWrite
 
 Query String:
 
@@ -149,7 +149,9 @@ Variables:
 }
 ```
 
-### Subscription
+### 3 Subscriptions
+
+#### 3.1 subscribe
 
 Query String:
 
