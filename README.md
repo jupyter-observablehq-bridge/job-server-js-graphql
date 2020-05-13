@@ -3,7 +3,7 @@
 ## Documentation
 
 + General: See [jupyter-observablehq-notebook](TBD)
-+ Deployment: See [docker/README](docker.README.md)
++ Deployment: See [docker/README](docker/README.md)
 
 
 ## Sample GraphQL Requests

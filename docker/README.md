@@ -1,11 +1,10 @@
 # JOB server
 
-JOB stands for [Jupyter](https://jupyter.org/)-[ObservableHQ](https://observablehq.com/)-Bridge.
-
-A JOB server has 2 parts:
+A JOB server has 3 parts:
 
 - a [Redis](https://redis.io/) instance
 - an [Apollo server](https://www.apollographql.com/docs/apollo-server/) offering a [GraphQL](https://graphql.org/) API
+- (_optional_) a GUI: [Redis Commander](http://joeferner.github.io/redis-commander/)
 
 Two ways to containerize and launch the JOB server:
 
@@ -19,9 +18,11 @@ Before running the container their images must be pulled and/or created.
 ```bash
 # redis
 docker pull redis:latest
+docker pull rediscommander/redis-commander
 
 # graphql server
 # from folder docker/
+# replace oscar6echo with your name
 IMG_NAME="oscar6echo/job-graphql-server:1.0"
 rm ./graphql-server/package.json
 cp ../package.json ./graphql-server/package.json
@@ -61,6 +62,11 @@ get foo
 Open `http://localhost:4001`.  
 You should see a [GraphQL playground](https://www.apollographql.com/docs/apollo-server/testing/graphql-playground/).  
 Try sample [requests](../README.md).
+
+- Test Redis Commander:
+
+Open `http://localhost:8082`.  
+You should see a [Redis Commander screen](http://joeferner.github.io/redis-commander/).
 
 - Stop:
 
@@ -181,6 +187,9 @@ kubectl port-forward service/srv-graphql 8002:4100
 # example for redis access on localhost:8001
 # assuming redis direct access ie. version 1 in kube.yaml
 kubectl port-forward service/srv-redis 8001:6479
+
+# example for redis-commander access on localhost:8082
+kubectl port-forward service/srv-gui 8082:8082
 ```
 
 - Test:
@@ -201,6 +210,9 @@ get foo
 Open `http://localhost:8002`.  
 You should see a [GraphQL playground](https://www.apollographql.com/docs/apollo-server/testing/graphql-playground/).  
 Try sample [requests](../README.md).
+
+Open `http://localhost:8082`.  
+You should see a [Redis Commander screen](http://joeferner.github.io/redis-commander/).
 
 - Undeploy
 
