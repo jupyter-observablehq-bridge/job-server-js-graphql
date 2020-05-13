@@ -1,0 +1,227 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: job-config
+  namespace: default
+data:
+  REDIS_HOST: srv-redis.default.svc.cluster.local
+  REDIS_PORT: '6479'
+  REDIS_DB: '0'
+  REDIS_LOGLEVEL: notice
+
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ing-job
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: gql.minikube.local
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: srv-graphql
+              servicePort: 4100
+    - host: gui.minikube.local
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: srv-gui
+              servicePort: 8082
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: srv-graphql
+  namespace: default
+  labels:
+    app: job
+    tag: tag-graphql
+spec:
+  selector:
+    tag: tag-graphql
+  type: NodePort
+  ports:
+    - port: 4100
+      targetPort: 4000
+      protocol: TCP
+      nodePort: 30590
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: srv-redis
+  namespace: default
+  labels:
+    app: job
+    tag: tag-redis
+spec:
+  selector:
+    tag: tag-redis
+
+  # version 1
+  # Redis direct access
+  type: NodePort
+  ports:
+    - port: 6479
+      targetPort: 6379
+      protocol: TCP
+      nodePort: 30591
+
+  # # version 2
+  # # NO Redis direct access
+  # type: ClusterIP
+  # ports:
+  #   - port: 6479
+  #     targetPort: 6379
+  #     protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: srv-gui
+  namespace: default
+  labels:
+    app: job
+    tag: tag-gui
+spec:
+  selector:
+    tag: tag-gui
+  type: NodePort
+  ports:
+    - port: 8082
+      targetPort: 8081
+      protocol: TCP
+      nodePort: 30592
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-graphql
+  namespace: default
+  labels:
+    app: job
+    tag: tag-graphql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tag: tag-graphql
+  template:
+    metadata:
+      labels:
+        tag: tag-graphql
+    spec:
+      containers:
+        - name: graphiql-server
+          image: oscar6echo/job-graphql-server:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: job-config
+          env:
+            - name: REDIS_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: job-secret
+                  key: redis-pwd
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-redis
+  namespace: default
+  labels:
+    app: job
+    tag: tag-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tag: tag-redis
+  template:
+    metadata:
+      labels:
+        tag: tag-redis
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+        - name: redis
+          image: redis:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /conf/redis.conf
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: conf
+              mountPath: /conf
+
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: conf
+          configMap:
+            name: my-redis-conf
+            items:
+              - key: redis.conf
+                path: redis.conf
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-gui
+  namespace: default
+  labels:
+    app: job
+    tag: tag-gui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tag: tag-gui
+  template:
+    metadata:
+      labels:
+        tag: tag-gui
+    spec:
+      containers:
+        - name: redis-commander
+          image: rediscommander/redis-commander
+          envFrom:
+            - configMapRef:
+                name: job-config
+          env:
+            - name: K8S_SIGTERM
+              value: '1'
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: job-secret
+                  key: redis-pwd
+          ports:
+            - name: redis-commander
+              containerPort: 8081
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

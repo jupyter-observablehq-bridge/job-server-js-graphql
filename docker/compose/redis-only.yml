@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - 6479:6379
+    volumes:
+      - ../redis/conf/redis.conf:/conf/redis.conf
+      - redis-data:/data
+    command:
+      - redis-server
+      - /conf/redis.conf
+    # redis user ${UID}:${GID}
+    # see https://github.com/docker-library/redis/blob/master/5.0/Dockerfile
+    user: 999:999
+    restart: always
+    networks:
+      bridge_net:
+        ipv4_address: 172.28.1.1
+
+networks:
+  bridge_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  redis-data:
+    external: true
