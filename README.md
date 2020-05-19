@@ -2,7 +2,7 @@
 
 ## Documentation
 
-+ General: See [jupyter-observablehq-notebook](TBD)
++ General: See [jupyter-observablehq-notebook](https://observablehq.com/@oscar6echo/jupyter-observablehq-bridge)
 + Deployment: See [docker/README](docker/README.md)
 
 
