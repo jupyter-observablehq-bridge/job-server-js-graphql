@@ -14,7 +14,7 @@
     "sim2": "REDIS_HOST=192.168.39.46 REDIS_PORT=30591 REDIS_PWD=mysecret node -r esm src/randomPublish.js"
   },
   "dependencies": {
-    "apollo-server": "^2.14.2",
+    "apollo-server": "^2.25.3",
     "esm": "^3.2.25",
     "graphql": "^14.6.0",
     "graphql-redis-subscriptions": "^2.2.1",
